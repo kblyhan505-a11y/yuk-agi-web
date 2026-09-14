@@ -1,0 +1,75 @@
+{
+  "site": {
+    "ad": "Yük Ağı",
+    "slogan": "Bölgesel yük ve boş araç ilan ağı"
+  },
+  "menu": {
+    "yukler": "Yük ilanları",
+    "araclar": "Boş araçlar",
+    "panel": "Panelim",
+    "giris": "Giriş yap",
+    "kayit": "Kayıt ol",
+    "cikis": "Çıkış yap"
+  },
+  "giris": {
+    "baslik": "Tekrar hoş geldiniz",
+    "aciklama": "İlanlarınızı yönetmek için giriş yapın.",
+    "eposta": "E-posta",
+    "parola": "Parola",
+    "gonder": "Giriş yap",
+    "hesabinYok": "Hesabınız yok mu?",
+    "kayitOl": "Kayıt olun",
+    "parolamiUnuttum": "Parolamı unuttum",
+    "hata": "E-posta veya parola hatalı."
+  },
+  "kayit": {
+    "baslik": "Hesap oluşturun",
+    "aciklama": "Kayıt ücretsizdir. Firmanızı kaydettikten sonra yönetici onayı gerekir.",
+    "adSoyad": "Ad soyad",
+    "telefon": "Telefon",
+    "gonder": "Hesabı oluştur",
+    "basarili": "Hesabınız oluşturuldu. E-postanıza gönderdiğimiz doğrulama bağlantısına tıklayın.",
+    "zatenVar": "Zaten hesabınız var mı?"
+  },
+  "parolaSifirla": {
+    "baslik": "Parolanızı sıfırlayın",
+    "aciklama": "E-posta adresinizi girin, sıfırlama bağlantısı gönderelim.",
+    "gonder": "Bağlantı gönder",
+    "basarili": "Bu adres kayıtlıysa sıfırlama bağlantısı gönderildi.",
+    "yeniParola": "Yeni parola",
+    "kaydet": "Parolayı kaydet"
+  },
+  "firma": {
+    "yeniBaslik": "Firmanızı kaydedin",
+    "yeniAciklama": "Onaylandıktan sonra 30 günlük deneme süreniz başlar. Kart bilgisi istenmez.",
+    "ad": "Firma adı",
+    "tur": "Firma türü",
+    "lojistik": "Lojistik şirketi",
+    "yukVeren": "Yük veren (mermer, tekstil, üretici)",
+    "nakliyeci": "Nakliyeci / araç sahibi",
+    "vergiNo": "Vergi numarası",
+    "sehir": "Şehir",
+    "hakkinda": "Firma tanıtımı",
+    "gonder": "Firmayı kaydet",
+    "beklemede": "Firmanız onay bekliyor",
+    "beklemedeAciklama": "Başvurunuzu aldık. Yönetici onayından sonra ilan verebilir ve teklif alabilirsiniz.",
+    "dogrulanmamis": "Doğrulanmamış",
+    "dogrulanmis": "Doğrulanmış firma"
+  },
+  "panel": {
+    "baslik": "Panelim",
+    "firmaYok": "Henüz bir firmanız yok",
+    "firmaYokAciklama": "İlan verebilmek için önce firmanızı kaydedin.",
+    "firmaKur": "Firma kaydet",
+    "denemeBitis": "Deneme süresi bitişi",
+    "durum": "Durum",
+    "rol": "Yetkiniz"
+  },
+  "genel": {
+    "yukleniyor": "Yükleniyor...",
+    "hata": "Bir sorun oluştu. Lütfen tekrar deneyin.",
+    "zorunlu": "Bu alan zorunludur",
+    "dil": "Dil",
+    "denemeSurumu": "Deneme sürümü — ödeme alınmıyor"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "site": {
+    "ad": "Freight Network",
+    "slogan": "Regional freight and empty vehicle listings"
+  },
+  "menu": {
+    "yukler": "Freight listings",
+    "araclar": "Empty vehicles",
+    "panel": "Dashboard",
+    "giris": "Sign in",
+    "kayit": "Sign up",
+    "cikis": "Sign out"
+  },
+  "giris": {
+    "baslik": "Welcome back",
+    "aciklama": "Sign in to manage your listings.",
+    "eposta": "Email",
+    "parola": "Password",
+    "gonder": "Sign in",
+    "hesabinYok": "No account yet?",
+    "kayitOl": "Create one",
+    "parolamiUnuttum": "Forgot password",
+    "hata": "Email or password is incorrect."
+  },
+  "kayit": {
+    "baslik": "Create an account",
+    "aciklama": "Signing up is free. Company registration requires admin approval.",
+    "adSoyad": "Full name",
+    "telefon": "Phone",
+    "gonder": "Create account",
+    "basarili": "Account created. Click the verification link we sent to your email.",
+    "zatenVar": "Already have an account?"
+  },
+  "parolaSifirla": {
+    "baslik": "Reset your password",
+    "aciklama": "Enter your email and we will send a reset link.",
+    "gonder": "Send link",
+    "basarili": "If this address is registered, a reset link has been sent.",
+    "yeniParola": "New password",
+    "kaydet": "Save password"
+  },
+  "firma": {
+    "yeniBaslik": "Register your company",
+    "yeniAciklama": "Your 30-day trial starts once approved. No card details required.",
+    "ad": "Company name",
+    "tur": "Company type",
+    "lojistik": "Logistics company",
+    "yukVeren": "Shipper (marble, textile, manufacturer)",
+    "nakliyeci": "Carrier / vehicle owner",
+    "vergiNo": "Tax number",
+    "sehir": "City",
+    "hakkinda": "About the company",
+    "gonder": "Register company",
+    "beklemede": "Your company is awaiting approval",
+    "beklemedeAciklama": "We received your application. Once approved you can post listings and receive offers.",
+    "dogrulanmamis": "Unverified",
+    "dogrulanmis": "Verified company"
+  },
+  "panel": {
+    "baslik": "Dashboard",
+    "firmaYok": "You do not have a company yet",
+    "firmaYokAciklama": "Register your company before posting listings.",
+    "firmaKur": "Register company",
+    "denemeBitis": "Trial ends",
+    "durum": "Status",
+    "rol": "Your role"
+  },
+  "genel": {
+    "yukleniyor": "Loading...",
+    "hata": "Something went wrong. Please try again.",
+    "zorunlu": "This field is required",
+    "dil": "Language",
+    "denemeSurumu": "Trial version — no payments are processed"
+  }
+}
