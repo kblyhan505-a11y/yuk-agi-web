@@ -1,0 +1,952 @@
+<title>Yük Ağı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<style>
+/* Layout: sabit üst bar + solda rol menüsü, dar ekranda tek sütuna iner.
+   Palet: koyu çam yeşili (yol tabelası), kireç beyazı yüzeyler, kehribar uyarı. */
+:root{
+  --bg:#F4F6F2; --surface:#FFFFFF; --surface-2:#EBEFE8; --surface-3:#E1E7DD;
+  --ink:#0E1613; --ink-2:#56635B; --ink-3:#87958B;
+  --line:#DFE5DA; --line-2:#CBD4C5;
+  --pine:#12604A; --pine-2:#0A2E22; --pine-soft:#E4EFE9; --lime:#1FA176;
+  --amber:#A86A14; --amber-soft:#FAEFDC;
+  --rust:#9E3326; --rust-soft:#FAE8E5;
+  --shadow:0 1px 2px rgba(14,22,19,.06);
+  --shadow-lift:0 14px 34px -20px rgba(10,46,34,.45);
+  --disp:"Barlow Condensed","Barlow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:10px; --r-lg:16px;
+  --bar:58px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#090D0B; --surface:#111714; --surface-2:#161E1A; --surface-3:#1D2721;
+    --ink:#E7EDE8; --ink-2:#96A49B; --ink-3:#6C7A72;
+    --line:#1F2A24; --line-2:#2B3730;
+    --pine:#2D9C76; --pine-2:#0C241C; --pine-soft:#11231C; --lime:#3FD6A4;
+    --amber:#D2993F; --amber-soft:#231A0C;
+    --rust:#DE7568; --rust-soft:#271310;
+    --shadow:0 1px 2px rgba(0,0,0,.5);
+    --shadow-lift:0 16px 40px -22px rgba(0,0,0,.9);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#090D0B; --surface:#111714; --surface-2:#161E1A; --surface-3:#1D2721;
+  --ink:#E7EDE8; --ink-2:#96A49B; --ink-3:#6C7A72;
+  --line:#1F2A24; --line-2:#2B3730;
+  --pine:#2D9C76; --pine-2:#0C241C; --pine-soft:#11231C; --lime:#3FD6A4;
+  --amber:#D2993F; --amber-soft:#231A0C;
+  --rust:#DE7568; --rust-soft:#271310;
+  --shadow:0 1px 2px rgba(0,0,0,.5);
+  --shadow-lift:0 16px 40px -22px rgba(0,0,0,.9);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--body); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--pine-2)}
+h1,h2,h3{font-family:var(--disp);font-weight:600;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:1.75rem}
+h2{font-size:1.3rem}
+h3{font-size:1.05rem}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:6px}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- üst bar ---------- */
+.topbar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:30;
+  background:var(--pine-2); color:#E3F0E9; min-height:var(--bar);
+}
+.topbar .inner{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  padding-block:9px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-size:1.22rem;font-weight:700;letter-spacing:.01em;color:#fff}
+.brand svg{flex:0 0 24px}
+.spacer{flex:1 1 auto}
+.rolepick{display:flex;align-items:center;gap:7px;min-width:0}
+.rolepick label{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:#92AFA1;white-space:nowrap}
+select.role{
+  background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.18);
+  border-radius:8px; padding:7px 9px; font-size:.88rem; font-weight:600; max-width:100%;
+}
+select.role option{color:#111;background:#fff}
+.langs{display:flex;gap:3px}
+.langs button{
+  background:transparent;border:1px solid rgba(255,255,255,.2);color:#9FBBAD;
+  border-radius:7px;padding:5px 9px;font-size:.78rem;font-weight:700;cursor:pointer;
+}
+.langs button[aria-pressed="true"]{background:#fff;color:var(--pine-2);border-color:#fff}
+
+.notice{background:var(--amber-soft);border-bottom:1px solid var(--line)}
+.notice .inner{
+  padding-block:8px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  color:var(--amber); font-size:.84rem; display:flex; gap:8px; align-items:flex-start;
+}
+.notice svg{flex:0 0 15px;margin-top:4px}
+
+/* ---------- kabuk ---------- */
+.shell{
+  display:grid; grid-template-columns:216px minmax(0,1fr); gap:22px;
+  max-width:1180px; margin:0 auto;
+  padding-block:20px 60px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+@media (max-width:820px){ .shell{grid-template-columns:1fr;gap:14px} }
+
+nav.side{display:flex;flex-direction:column;gap:2px;align-self:start;position:sticky;top:calc(var(--bar) + env(safe-area-inset-top,0px) + 50px)}
+@media (max-width:820px){
+  nav.side{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;scrollbar-width:thin}
+}
+nav.side button{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:transparent;border:1px solid transparent;border-radius:9px;
+  padding:9px 11px;text-align:left;cursor:pointer;color:var(--ink-2);
+  font-weight:600;font-size:.92rem;white-space:nowrap;
+}
+nav.side button:hover{background:var(--surface-2)}
+nav.side button[aria-current="true"]{background:var(--pine-soft);color:var(--pine);border-color:color-mix(in srgb,var(--pine) 22%,transparent)}
+nav.side .count{font-size:.74rem;font-weight:700;background:var(--amber-soft);color:var(--amber);border-radius:99px;padding:1px 7px}
+
+main{min-width:0}
+.head{margin-bottom:16px}
+.head p{color:var(--ink-2);margin-top:5px;max-width:64ch;font-size:.94rem}
+
+/* ---------- parçalar ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.route{display:flex;align-items:center;gap:7px;font-family:var(--disp);font-size:1.3rem;font-weight:600;min-width:0}
+.route svg{color:var(--pine);flex:0 0 18px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:.76rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.ok{background:var(--pine-soft);color:var(--pine);border-color:transparent}
+.chip.warn{background:var(--amber-soft);color:var(--amber);border-color:transparent}
+.chip.bad{background:var(--rust-soft);color:var(--rust);border-color:transparent}
+.chip.lock{background:var(--surface-3);color:var(--ink-2);border-color:transparent}
+
+.kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--ink-2)}
+.kv b{text-align:right}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--pine);color:#fff;border:1px solid transparent;border-radius:8px;
+  padding:9px 14px;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn.quiet{background:transparent;color:var(--ink);border-color:var(--line-2)}
+.btn.quiet:hover{background:var(--surface-2);filter:none}
+.btn.soft{background:var(--pine-soft);color:var(--pine)}
+.btn.sm{padding:6px 11px;font-size:.84rem}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+.price{font-family:var(--disp);font-size:1.3rem;font-weight:700}
+.perkm{font-size:.75rem;color:var(--ink-3)}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:11px;border-top:1px solid var(--line)}
+
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.tile b{display:block;font-family:var(--disp);font-size:1.75rem;line-height:1}
+.tile span{font-size:.78rem;color:var(--ink-3)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:540px;font-size:.9rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+
+.filters{display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.field label{font-size:.72rem;font-weight:700;color:var(--ink-3);letter-spacing:.04em}
+.field select,.field input,.field textarea{
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  border-radius:7px;padding:8px 9px;font:inherit;font-size:.9rem;width:100%;
+}
+
+.empty{border:1px dashed var(--line-2);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;font-family:var(--disp);font-size:1.2rem;color:var(--ink);margin-bottom:5px}
+
+.lockbox{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:13px;display:flex;gap:10px;align-items:flex-start}
+.lockbox svg{flex:0 0 16px;margin-top:3px;color:var(--ink-3)}
+.lockbox p{font-size:.88rem;color:var(--ink-2)}
+
+.split{display:grid;gap:14px;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);align-items:start}
+@media (max-width:760px){ .split{grid-template-columns:1fr} }
+
+.qrwrap{display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.qrcard{background:#fff;border-radius:12px;padding:14px;box-shadow:var(--shadow-lift);display:flex;flex-direction:column;align-items:center;gap:9px}
+.qrcard canvas{display:block;width:176px;height:176px;max-width:100%}
+.qrcard .nm{font-family:var(--disp);font-size:1.05rem;font-weight:700;color:#0E1613}
+.qrcard .sub{font-size:.72rem;color:#56635B;letter-spacing:.04em}
+
+.toast{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:50;
+  background:var(--pine-2);color:#E3F0E9;border-radius:99px;
+  padding:10px 16px;font-size:.88rem;box-shadow:var(--shadow-lift);
+}
+@media (prefers-reduced-motion:no-preference){
+  .toast{animation:pop .22s ease-out}
+  @keyframes pop{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+
+<header class="topbar">
+  <div class="inner">
+    <span class="brand">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" width="24" height="24">
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="#1FA176"/>
+        <path d="M6 20h13V10H6v10Zm13-6h4.2l3 3.4V20H19v-6Z" fill="#fff" opacity=".95"/>
+        <circle cx="11" cy="21.5" r="2.2" fill="#0A2E22"/><circle cx="22" cy="21.5" r="2.2" fill="#0A2E22"/>
+      </svg>
+      <span id="brandName">Yük Ağı</span>
+    </span>
+    <span class="spacer"></span>
+    <span class="rolepick">
+      <label for="roleSel" id="roleLbl">Demo rolü</label>
+      <select class="role" id="roleSel"></select>
+    </span>
+    <span class="langs">
+      <button type="button" data-lang="tr" aria-pressed="true">TR</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </span>
+  </div>
+</header>
+
+<div class="notice">
+  <div class="inner">
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="15" height="15">
+      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M8 4.6v4.4M8 11.3v.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <span id="noticeTxt"></span>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="side" id="nav" aria-label="Menü"></nav>
+  <main id="view"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== sözlük ===================== */
+var TXT = {
+  tr:{
+    brand:"Yük Ağı", roleLbl:"Demo rolü",
+    notice:"Tanıtım sürümü — ödeme alınmıyor. İlanlar ve firmalar örnektir; numaralar gerçek değildir.",
+    roles:{yuk:"Ege Mermer · yük veren", nak:"Ergün Nakliyat · nakliyeci", loj:"Pamukkale Lojistik · firma yöneticisi", adm:"Platform yöneticisi"},
+    nav:{bul:"Yük bul", ilanlar:"Yüklerim", teklifler:"Teklifler", benimTeklif:"Tekliflerim", isler:"İşlerim",
+         calisan:"Çalışanlar", qr:"QR kodum", firma:"Firmam",
+         onay:"Onay kuyruğu", firmalar:"Firmalar", abonelik:"Abonelikler", gelir:"Gelir", kayit:"İşlem kayıtları"},
+    bulH:"Yük bul", bulP:"Pazara açılmış ilanlar. İlanı veren firma pazara çıkarmadıkça hiçbir ilan burada görünmez.",
+    ilanlarH:"Yüklerim", ilanlarP:"Firmanızın ilanları. Taslak ve firmaya özel olanlar yalnızca sizin ekranınızda.",
+    tekliflerH:"Gelen teklifler", tekliflerP:"Yalnızca ilan sahibi olarak sizin görebildiğiniz teklifler.",
+    benimTeklifH:"Tekliflerim", benimTeklifP:"Bıraktığınız teklifler ve durumları.",
+    islerH:"İşlerim", islerP:"Anlaşmaya varılmış ve devam eden taşımalar.",
+    calisanH:"Çalışanlar", calisanP:"Yetkiler firma yöneticisi tarafından verilir; çalışan kendi yetkisini değiştiremez.",
+    qrH:"QR kodum", qrP:"Firma sayfanıza yönlendiren kod. İçinde parola veya oturum bilgisi yoktur; okutmak giriş yapmış sayılmaz.",
+    firmaH:"Firmam", firmaP:"Firma bilgileri, paket ve deneme süresi.",
+    onayH:"Onay kuyruğu", onayP:"Yeni firmalar yayına alınmadan önce burada kontrol edilir. Deneme süresi onay anında başlar.",
+    firmalarH:"Firmalar", firmalarP:"Platformdaki tüm firmalar ve durumları.",
+    abonelikH:"Abonelikler", abonelikP:"Paketler ve deneme süreleri. Fiyatlar buradan değiştirilir.",
+    gelirH:"Gelir", gelirP:"Yalnızca gerçekleşmiş ödemelerden hesaplanır. Deneme hesapları ve test işlemleri gelire yazılmaz.",
+    kayitH:"İşlem kayıtları", kayitP:"Hassas işlemler kayıt altındadır ve silinemez.",
+    nereye:"Nereye", dorse:"Dorse tipi", sirala:"Sırala", filtrele:"Filtrele",
+    sYeni:"En yeni", sFiyat:"Fiyat (yüksek)", sKm:"Km fiyatı (yüksek)",
+    hepsi:"Tüm şehirler", farketmez:"Fark etmez",
+    ton:"ton", km:"km", teklifVer:"Teklif ver", incele:"İncele", geri:"İlan listesine dön",
+    teklifSayi:"teklif", teklifGizli:"Teklifler gizli",
+    gizliAcik:"Bu ilanın teklifleri yalnızca ilanı veren firma ile teklifi veren firma arasında görünür. Rakip firmalar ilanı görür, teklifleri göremez.",
+    dogrulanmis:"Doğrulanmış firma", dogrulanmamis:"Doğrulanmamış",
+    gorunurluk:{ozel:"Özel (taslak)", firma:"Firma sayfası", pazar:"Pazarda"},
+    durum:{yayinda:"Yayında", anlasildi:"Anlaşma sağlandı", tasiniyor:"Taşınıyor", tamamlandi:"Tamamlandı", beklemede:"Onay bekliyor", onayli:"Onaylı"},
+    tDurum:{bekliyor:"Bekliyor", kabul:"Kabul edildi", red:"Reddedildi"},
+    yukCinsi:"Yük cinsi", mesafe:"Mesafe", istenenFiyat:"İstenen fiyat", kmBasi:"Kilometre başına",
+    ilanNo:"İlan no", yayin:"Yayınlanma", aciklama:"İlan açıklaması", gorunurlukEt:"Görünürlük",
+    kabulEt:"Kabul et", reddet:"Reddet", kabulEdildi:"Teklif kabul edildi, diğerleri otomatik reddedildi.",
+    teklifGonder:"Teklifi gönder", teklifAlindi:"Teklifiniz ilan sahibine iletildi.", vazgec:"Vazgeç",
+    tutar:"Teklifiniz (₺)", not:"Not", notPh:"Ne zaman yükleyebilirsiniz, aracınız nedir?",
+    paket:"Paket", denemeBitis:"Deneme bitişi", kalanGun:"kalan gün", aktifIlan:"Aktif ilan",
+    calisanSayi:"Çalışan", yetki:"Yetki", eklendi:"Katıldı",
+    rolAd:{sahip:"Firma sahibi", yonetici:"Yönetici", calisan:"Çalışan"},
+    qrIndir:"PNG indir", qrYenile:"Kodu yenile", qrYenilendi:"Yeni kod üretildi, eski bağlantı artık çalışmıyor.",
+    qrOkuma:"Bu ay okutma", qrAdres:"Bağlantı",
+    indirKapali:"Demoda indirme kapalı — gerçek sürümde PNG ve SVG olarak iner.",
+    yayinla:"Yayınla", onayla:"Onayla", gelirYok:"Henüz gerçekleşmiş ödeme yok",
+    gelirYokP:"Ödemeler kapalı olduğu için gelir sıfır görünüyor. Deneme hesapları buraya yazılmaz.",
+    firmaOnaylandi:"Firma onaylandı, 30 günlük deneme süresi başladı.",
+    demoNot:"Demo: değişiklikler yalnızca bu ekranda kalır, kaydedilmez.",
+    aylik:"aylık", kdvHaric:"KDV hariç", limitIlan:"ilan", limitCalisan:"çalışan",
+    bosBul:"Bu filtreye uyan ilan yok", bosBulP:"Filtreyi genişletmeyi deneyin.",
+    bosTeklif:"Henüz teklif yok", bosTeklifP:"İlanınıza teklif geldiğinde burada listelenir."
+  },
+  en:{
+    brand:"Freight Network", roleLbl:"Demo role",
+    notice:"Demo version — no payments are processed. Listings and companies are examples; phone numbers are not real.",
+    roles:{yuk:"Ege Marble · shipper", nak:"Ergün Transport · carrier", loj:"Pamukkale Logistics · company admin", adm:"Platform admin"},
+    nav:{bul:"Find freight", ilanlar:"My listings", teklifler:"Offers", benimTeklif:"My offers", isler:"My jobs",
+         calisan:"Staff", qr:"My QR code", firma:"My company",
+         onay:"Approval queue", firmalar:"Companies", abonelik:"Subscriptions", gelir:"Revenue", kayit:"Audit log"},
+    bulH:"Find freight", bulP:"Listings published to the shared market. Nothing appears here unless its owner publishes it.",
+    ilanlarH:"My listings", ilanlarP:"Your company's listings. Drafts and company-only ones are visible to you alone.",
+    tekliflerH:"Incoming offers", tekliflerP:"Offers only you, as the listing owner, can see.",
+    benimTeklifH:"My offers", benimTeklifP:"Offers you have placed and their status.",
+    islerH:"My jobs", islerP:"Agreed and ongoing shipments.",
+    calisanH:"Staff", calisanP:"Roles are assigned by the company admin; staff cannot change their own role.",
+    qrH:"My QR code", qrP:"Links to your company page. It carries no password or session; scanning does not sign anyone in.",
+    firmaH:"My company", firmaP:"Company details, plan and trial period.",
+    onayH:"Approval queue", onayP:"New companies are reviewed here before going live. The trial starts on approval.",
+    firmalarH:"Companies", firmalarP:"Every company on the platform and its status.",
+    abonelikH:"Subscriptions", abonelikP:"Plans and trials. Prices are changed from here.",
+    gelirH:"Revenue", gelirP:"Calculated from completed payments only. Trial accounts and test transactions are excluded.",
+    kayitH:"Audit log", kayitP:"Sensitive actions are recorded and cannot be deleted.",
+    nereye:"Destination", dorse:"Trailer type", sirala:"Sort", filtrele:"Filter",
+    sYeni:"Newest", sFiyat:"Price (high)", sKm:"Price per km (high)",
+    hepsi:"All cities", farketmez:"Any",
+    ton:"t", km:"km", teklifVer:"Make an offer", incele:"View", geri:"Back to listings",
+    teklifSayi:"offers", teklifGizli:"Offers hidden",
+    gizliAcik:"Offers on this listing are visible only to its owner and the company that made them. Competitors see the listing, never the offers.",
+    dogrulanmis:"Verified company", dogrulanmamis:"Unverified",
+    gorunurluk:{ozel:"Private (draft)", firma:"Company page", pazar:"Shared market"},
+    durum:{yayinda:"Live", anlasildi:"Agreed", tasiniyor:"In transit", tamamlandi:"Completed", beklemede:"Awaiting approval", onayli:"Approved"},
+    tDurum:{bekliyor:"Pending", kabul:"Accepted", red:"Declined"},
+    yukCinsi:"Cargo", mesafe:"Distance", istenenFiyat:"Asking price", kmBasi:"Per kilometre",
+    ilanNo:"Listing no", yayin:"Posted", aciklama:"Description", gorunurlukEt:"Visibility",
+    kabulEt:"Accept", reddet:"Decline", kabulEdildi:"Offer accepted; the others were declined automatically.",
+    teklifGonder:"Send offer", teklifAlindi:"Your offer was sent to the listing owner.", vazgec:"Cancel",
+    tutar:"Your offer (₺)", not:"Note", notPh:"When can you load, and what vehicle?",
+    paket:"Plan", denemeBitis:"Trial ends", kalanGun:"days left", aktifIlan:"Active listings",
+    calisanSayi:"Staff", yetki:"Role", eklendi:"Joined",
+    rolAd:{sahip:"Owner", yonetici:"Admin", calisan:"Staff"},
+    qrIndir:"Download PNG", qrYenile:"Reissue code", qrYenilendi:"New code issued; the old link no longer works.",
+    qrOkuma:"Scans this month", qrAdres:"Link",
+    indirKapali:"Downloads are off in the demo — the real version exports PNG and SVG.",
+    yayinla:"Publish", onayla:"Approve", gelirYok:"No completed payments yet",
+    gelirYokP:"Payments are switched off, so revenue reads zero. Trial accounts are never counted here.",
+    firmaOnaylandi:"Company approved; the 30-day trial has started.",
+    demoNot:"Demo: changes stay on this screen and are not saved.",
+    aylik:"per month", kdvHaric:"excl. VAT", limitIlan:"listings", limitCalisan:"staff",
+    bosBul:"No listings match this filter", bosBulP:"Try widening the filter.",
+    bosTeklif:"No offers yet", bosTeklifP:"Offers on your listing will appear here."
+  }
+};
+
+var lang = "tr";
+try{ var s=localStorage.getItem("ya_lang"); if(s==="tr"||s==="en") lang=s; }catch(e){}
+function T(){ return TXT[lang]; }
+
+/* ===================== veri ===================== */
+var KM={"İstanbul":570,"İzmir":230,"Ankara":480,"Bursa":430,"Antalya":230,"Konya":380,"Mersin":640,"Eskişehir":400,"Manisa":180,"Kocaeli":520};
+var DORSE=[
+  {k:"kapakli", tr:"Kapaklı dorse", en:"Curtain-side"},
+  {k:"tenteli", tr:"Tenteli", en:"Tarpaulin"},
+  {k:"lowbed",  tr:"Lowbed", en:"Lowbed"},
+  {k:"frigo",   tr:"Frigo", en:"Reefer"},
+  {k:"acik",    tr:"Açık kasa", en:"Flatbed"}
+];
+function dorseAd(k){ for(var i=0;i<DORSE.length;i++) if(DORSE[i].k===k) return DORSE[i][lang]; return k; }
+
+var FIRMALAR={
+  ege:{ad:"Ege Mermer San.", tur:"yuk", sehir:"Denizli", dogrulandi:true,  durum:"onayli", plan:"Ücretsiz", deneme:null},
+  pam:{ad:"Pamukkale Lojistik", tur:"loj", sehir:"Denizli", dogrulandi:true, durum:"onayli", plan:"Profesyonel", deneme:22},
+  erg:{ad:"Ergün Nakliyat", tur:"nak", sehir:"Denizli", dogrulandi:false, durum:"onayli", plan:"Ücretsiz", deneme:null},
+  hon:{ad:"Honaz Madencilik", tur:"yuk", sehir:"Denizli", dogrulandi:true, durum:"onayli", plan:"Ücretsiz", deneme:null},
+  aks:{ad:"Aksoy Lojistik", tur:"loj", sehir:"Uşak", dogrulandi:false, durum:"beklemede", plan:"—", deneme:null},
+  bbd:{ad:"Babadağ Havlu", tur:"yuk", sehir:"Denizli", dogrulandi:false, durum:"beklemede", plan:"—", deneme:null}
+};
+
+var ILANLAR=[
+  {id:"YK-2481", firma:"ege", to:"İstanbul", ton:24, dorse:"kapakli", fiyat:24500,
+   cargo:{tr:"Mermer plaka",en:"Marble slabs"}, ne:{tr:"Bugün",en:"Today"}, posted:{tr:"Az önce",en:"Just now"},
+   gor:"pazar", durum:"yayinda",
+   not:{tr:"Yükleme organize sanayide. Forklift bizde, bağlantı ekipmanı araçta olmalı.",
+        en:"Loading at the industrial estate. Forklift provided; lashing equipment must be on the vehicle."},
+   teklifler:[
+     {firma:"erg", tutar:23000, durum:"bekliyor", not:{tr:"Yarın sabah yükleyebilirim.",en:"Can load tomorrow morning."}},
+     {firma:"pam", tutar:23800, durum:"bekliyor", not:{tr:"Kapaklı dorse hazır, aynı gün çıkış.",en:"Curtain-side ready, same-day departure."}}
+   ]},
+  {id:"YK-2488", firma:"ege", to:"Ankara", ton:26, dorse:"kapakli", fiyat:19900,
+   cargo:{tr:"Seramik karo",en:"Ceramic tiles"}, ne:{tr:"Yarın",en:"Tomorrow"}, posted:{tr:"2 saat önce",en:"2 hours ago"},
+   gor:"pazar", durum:"yayinda",
+   not:{tr:"Paletli ve streçli. Ostim'de boşaltma.",en:"Palletised and shrink-wrapped. Unloading at Ostim."},
+   teklifler:[{firma:"erg", tutar:19000, durum:"bekliyor", not:{tr:"Dönüş yüküm var, uygun.",en:"I have a return load, works for me."}}]},
+  {id:"YK-2495", firma:"ege", to:"Mersin", ton:25, dorse:"lowbed", fiyat:27500,
+   cargo:{tr:"Mermer blok",en:"Marble block"}, ne:{tr:"4 gün sonra",en:"In 4 days"}, posted:{tr:"Dün",en:"Yesterday"},
+   gor:"ozel", durum:"yayinda",
+   not:{tr:"Liman teslim, evrak hazır. Fiyat netleşmeden pazara açılmayacak.",
+        en:"Port delivery, paperwork ready. Not going to market until the price is settled."},
+   teklifler:[]},
+  {id:"YK-2502", firma:"hon", to:"İzmir", ton:18, dorse:"tenteli", fiyat:11800,
+   cargo:{tr:"Ev tekstili",en:"Home textiles"}, ne:{tr:"Bugün",en:"Today"}, posted:{tr:"5 saat önce",en:"5 hours ago"},
+   gor:"pazar", durum:"yayinda",
+   not:{tr:"26 palet, streçli. Boşaltma Çiğli'de, sabah 08:00 randevulu.",
+        en:"26 pallets, wrapped. Unloading in Çiğli, 08:00 appointment."},
+   teklifler:[{firma:"pam", tutar:11200, durum:"bekliyor", not:{tr:"Tenteli hazır.",en:"Tarpaulin ready."}}]},
+  {id:"YK-2510", firma:"pam", to:"Bursa", ton:22, dorse:"tenteli", fiyat:16400,
+   cargo:{tr:"Sanayi malzemesi",en:"Industrial goods"}, ne:{tr:"Yarın",en:"Tomorrow"}, posted:{tr:"3 saat önce",en:"3 hours ago"},
+   gor:"pazar", durum:"yayinda",
+   not:{tr:"Sac ve profil. Vinçle yükleme, dorse tabanı düz olmalı.",
+        en:"Sheet metal and profiles. Crane loading, flat trailer bed required."},
+   teklifler:[]},
+  {id:"YK-2516", firma:"hon", to:"Konya", ton:20, dorse:"acik", fiyat:14300,
+   cargo:{tr:"Kablo makarası",en:"Cable drums"}, ne:{tr:"2 gün sonra",en:"In 2 days"}, posted:{tr:"Dün",en:"Yesterday"},
+   gor:"firma", durum:"yayinda",
+   not:{tr:"6 makara, halatla sabitlenecek. Şimdilik yalnızca firma sayfamızda.",
+        en:"6 drums, rope-secured. For now only on our company page."},
+   teklifler:[]},
+  {id:"YK-2399", firma:"ege", to:"Antalya", ton:12, dorse:"tenteli", fiyat:9200,
+   cargo:{tr:"Havlu ve bornoz",en:"Towels and robes"}, ne:{tr:"Tamamlandı",en:"Completed"}, posted:{tr:"Geçen hafta",en:"Last week"},
+   gor:"pazar", durum:"tamamlandi",
+   not:{tr:"Hacimli ama hafif yük. Kapalı kasa şart.",en:"Bulky but light. Enclosed body required."},
+   teklifler:[{firma:"erg", tutar:8900, durum:"kabul", not:{tr:"Teslim edildi.",en:"Delivered."}}]},
+  {id:"YK-2460", firma:"pam", to:"Kocaeli", ton:22, dorse:"acik", fiyat:21400,
+   cargo:{tr:"Makine parçası",en:"Machine parts"}, ne:{tr:"Taşınıyor",en:"In transit"}, posted:{tr:"3 gün önce",en:"3 days ago"},
+   gor:"pazar", durum:"tasiniyor",
+   not:{tr:"Sandıklı, vinç boşaltma alıcıda.",en:"Crated; crane unloading at the consignee."},
+   teklifler:[{firma:"erg", tutar:20800, durum:"kabul", not:{tr:"Yolda.",en:"On the road."}}]}
+];
+
+var CALISANLAR=[
+  {ad:"Kadir Duman", rol:"sahip",    kat:{tr:"Mart 2026",en:"March 2026"}},
+  {ad:"Seda Yılmaz", rol:"yonetici", kat:{tr:"Nisan 2026",en:"April 2026"}},
+  {ad:"Oğuz Tekin",  rol:"calisan",  kat:{tr:"Temmuz 2026",en:"July 2026"}},
+  {ad:"Beren Acar",  rol:"calisan",  kat:{tr:"Eylül 2026",en:"September 2026"}}
+];
+
+var PLANLAR=[
+  {ad:{tr:"Başlangıç",en:"Starter"}, fiyat:1000, calisan:3,  ilan:20},
+  {ad:{tr:"Profesyonel",en:"Professional"}, fiyat:2000, calisan:10, ilan:100}
+];
+
+var KAYITLAR=[
+  {z:{tr:"Bugün 11:04",en:"Today 11:04"}, kim:"Kubilay D.", ne:{tr:"Firma onaylandı",en:"Company approved"}, hedef:"Pamukkale Lojistik"},
+  {z:{tr:"Bugün 09:37",en:"Today 09:37"}, kim:"Kadir Duman", ne:{tr:"Teklif kabul edildi",en:"Offer accepted"}, hedef:"YK-2460"},
+  {z:{tr:"Dün 16:12",en:"Yesterday 16:12"}, kim:"Kubilay D.", ne:{tr:"QR kodu yenilendi",en:"QR code reissued"}, hedef:"Pamukkale Lojistik"},
+  {z:{tr:"Dün 14:50",en:"Yesterday 14:50"}, kim:"Seda Yılmaz", ne:{tr:"Çalışan davet edildi",en:"Staff invited"}, hedef:"Beren Acar"}
+];
+
+/* ===================== durum ===================== */
+var rol = "loj";
+var ekran = "bul";
+var acikIlan = null;
+var teklifFormu = null;
+var qrTok = "7f3ad91c";
+var filtre = {to:"", dorse:"", sort:"yeni"};
+
+var ROL_FIRMA = {yuk:"ege", nak:"erg", loj:"pam", adm:null};
+function benimFirmam(){ return ROL_FIRMA[rol]; }
+
+var MENU = {
+  yuk:["ilanlar","teklifler","firma"],
+  nak:["bul","benimTeklif","isler","firma"],
+  loj:["bul","ilanlar","teklifler","calisan","qr","firma"],
+  adm:["onay","firmalar","abonelik","gelir","kayit"]
+};
+
+/* ===================== yardımcılar ===================== */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]; }); }
+function tl(n){ return "₺"+Number(n||0).toLocaleString(lang==="tr"?"tr-TR":"en-GB"); }
+function km(il){ return KM[il]||400; }
+function perkm(f,k){ return Math.round(f/k); }
+function L(o){ return o && typeof o==="object" ? (o[lang]||o.tr) : o; }
+function ok(){ return '<svg viewBox="0 0 20 12" fill="none" aria-hidden="true" width="18" height="12"><path d="M0 6h16M11.5 1.5 17 6l-5.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+function kilit(){ return '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="16" height="16"><rect x="3" y="7" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.4"/></svg>'; }
+
+var toastTimer=null;
+function toast(msg){
+  var old=document.querySelector(".toast"); if(old) old.remove();
+  var el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status");
+  el.textContent=msg; document.body.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ el.remove(); },3000);
+}
+
+function gorunenIlanlar(){
+  var f=benimFirmam();
+  return ILANLAR.filter(function(i){
+    if(rol==="adm") return true;
+    if(i.firma===f) return true;
+    return i.gor==="pazar" || i.gor==="firma";
+  });
+}
+function teklifGorebilir(i){
+  if(rol==="adm") return true;
+  var f=benimFirmam();
+  if(i.firma===f) return true;
+  return (i.teklifler||[]).some(function(t){ return t.firma===f; });
+}
+
+/* ===================== kartlar ===================== */
+function ilanKarti(i, sahibiMi){
+  var t=T(), k=km(i.to), say=(i.teklifler||[]).length;
+  var teklifChip = teklifGorebilir(i)
+    ? (say ? '<span class="chip ok">'+say+' '+t.teklifSayi+'</span>' : "")
+    : '<span class="chip lock">'+t.teklifGizli+'</span>';
+  var gorChip = sahibiMi ? '<span class="chip '+(i.gor==="pazar"?"ok":i.gor==="ozel"?"warn":"")+'">'+t.gorunurluk[i.gor]+'</span>' : "";
+  var durChip = (i.durum!=="yayinda") ? '<span class="chip '+(i.durum==="tamamlandi"?"":"warn")+'">'+t.durum[i.durum]+'</span>' : "";
+  return '<article class="card" style="display:flex;flex-direction:column;gap:9px">'+
+    '<div class="route">'+esc("Denizli")+ok()+esc(i.to)+'</div>'+
+    '<div class="chips">'+
+      '<span class="chip">'+esc(L(i.cargo))+'</span>'+
+      '<span class="chip">'+i.ton+' '+t.ton+'</span>'+
+      '<span class="chip">'+esc(dorseAd(i.dorse))+'</span>'+
+      '<span class="chip">'+esc(L(i.ne))+'</span>'+
+    '</div>'+
+    '<div style="font-size:.85rem;color:var(--ink-2)">'+esc(FIRMALAR[i.firma].ad)+' · '+esc(L(i.posted))+'</div>'+
+    '<div class="chips">'+
+      (FIRMALAR[i.firma].dogrulandi?'<span class="chip ok">✓ '+t.dogrulanmis+'</span>':'<span class="chip warn">'+t.dogrulanmamis+'</span>')+
+      gorChip+durChip+teklifChip+
+    '</div>'+
+    '<div class="foot">'+
+      '<div><div class="price tnum">'+tl(i.fiyat)+'</div>'+
+      '<div class="perkm tnum">'+k+' '+t.km+' · '+tl(perkm(i.fiyat,k))+'/'+t.km+'</div></div>'+
+      '<button class="btn soft sm" data-ac="ac" data-id="'+i.id+'">'+t.incele+'</button>'+
+    '</div></article>';
+}
+
+/* ===================== ekranlar ===================== */
+function ekranBul(){
+  var t=T();
+  var liste=gorunenIlanlar().filter(function(i){
+    if(i.firma===benimFirmam()) return false;
+    if(i.durum!=="yayinda") return false;
+    if(filtre.to && i.to!==filtre.to) return false;
+    if(filtre.dorse && i.dorse!==filtre.dorse) return false;
+    return true;
+  });
+  if(filtre.sort==="fiyat") liste.sort(function(a,b){return b.fiyat-a.fiyat;});
+  if(filtre.sort==="km") liste.sort(function(a,b){return perkm(b.fiyat,km(b.to))-perkm(a.fiyat,km(a.to));});
+
+  var sehirler=Object.keys(KM).sort(function(a,b){return a.localeCompare(b,"tr");});
+  var f='<form class="filters" id="filtreForm">'+
+    '<div class="field"><label for="fTo">'+t.nereye+'</label><select id="fTo"><option value="">'+t.hepsi+'</option>'+
+      sehirler.map(function(c){return '<option'+(filtre.to===c?' selected':'')+'>'+esc(c)+'</option>';}).join("")+'</select></div>'+
+    '<div class="field"><label for="fD">'+t.dorse+'</label><select id="fD"><option value="">'+t.farketmez+'</option>'+
+      DORSE.map(function(d){return '<option value="'+d.k+'"'+(filtre.dorse===d.k?' selected':'')+'>'+esc(d[lang])+'</option>';}).join("")+'</select></div>'+
+    '<div class="field"><label for="fS">'+t.sirala+'</label><select id="fS">'+
+      [["yeni",t.sYeni],["fiyat",t.sFiyat],["km",t.sKm]].map(function(o){
+        return '<option value="'+o[0]+'"'+(filtre.sort===o[0]?' selected':'')+'>'+esc(o[1])+'</option>';}).join("")+'</select></div>'+
+    '<div class="field"><label>&nbsp;</label><button class="btn quiet" type="submit">'+t.filtrele+'</button></div>'+
+  '</form>';
+
+  return bas(t.bulH,t.bulP)+f+(liste.length
+    ? '<div class="grid">'+liste.map(function(i){return ilanKarti(i,false);}).join("")+'</div>'
+    : '<div class="empty"><b>'+t.bosBul+'</b><p>'+t.bosBulP+'</p></div>');
+}
+
+function ekranIlanlarim(){
+  var t=T(), f=benimFirmam();
+  var liste=ILANLAR.filter(function(i){ return i.firma===f; });
+  return bas(t.ilanlarH,t.ilanlarP)+
+    '<div class="grid">'+liste.map(function(i){return ilanKarti(i,true);}).join("")+'</div>';
+}
+
+function ekranTeklifler(){
+  var t=T(), f=benimFirmam(), sat=[];
+  ILANLAR.forEach(function(i){
+    if(i.firma!==f) return;
+    (i.teklifler||[]).forEach(function(tk){ sat.push({i:i,t:tk}); });
+  });
+  if(!sat.length) return bas(t.tekliflerH,t.tekliflerP)+'<div class="empty"><b>'+t.bosTeklif+'</b><p>'+t.bosTeklifP+'</p></div>';
+  return bas(t.tekliflerH,t.tekliflerP)+
+    '<div class="stack">'+sat.map(function(s){
+      var fark=s.t.tutar-s.i.fiyat;
+      return '<div class="card">'+
+        '<div class="row" style="justify-content:space-between">'+
+          '<div class="route" style="font-size:1.05rem">'+esc("Denizli")+ok()+esc(s.i.to)+'</div>'+
+          '<span class="chip '+(s.t.durum==="kabul"?"ok":s.t.durum==="red"?"bad":"warn")+'">'+t.tDurum[s.t.durum]+'</span>'+
+        '</div>'+
+        '<div class="kv"><span>'+esc(FIRMALAR[s.t.firma].ad)+'</span><b class="tnum">'+tl(s.t.tutar)+
+          ' <span style="color:var(--ink-3);font-weight:500">('+(fark>0?"+":"")+tl(fark).replace("₺","")+')</span></b></div>'+
+        '<div class="kv"><span>'+esc(L(s.t.not))+'</span><b>'+esc(s.i.id)+'</b></div>'+
+        (s.t.durum==="bekliyor"
+          ? '<div class="row" style="margin-top:10px"><button class="btn sm" data-ac="kabul" data-id="'+s.i.id+'" data-f="'+s.t.firma+'">'+t.kabulEt+'</button>'+
+            '<button class="btn quiet sm" data-ac="red" data-id="'+s.i.id+'" data-f="'+s.t.firma+'">'+t.reddet+'</button></div>'
+          : "")+
+      '</div>';
+    }).join("")+'</div>';
+}
+
+function ekranBenimTeklif(){
+  var t=T(), f=benimFirmam(), sat=[];
+  ILANLAR.forEach(function(i){ (i.teklifler||[]).forEach(function(tk){ if(tk.firma===f) sat.push({i:i,t:tk}); }); });
+  if(!sat.length) return bas(t.benimTeklifH,t.benimTeklifP)+'<div class="empty"><b>'+t.bosTeklif+'</b><p>'+t.bosTeklifP+'</p></div>';
+  return bas(t.benimTeklifH,t.benimTeklifP)+
+    '<div class="tablewrap"><table><thead><tr>'+
+      '<th>'+t.ilanNo+'</th><th>'+t.nereye+'</th><th>'+t.tutar.replace(" (₺)","")+'</th><th>'+t.not+'</th><th>'+t.sirala.slice(0,0)+'Durum</th>'+
+    '</tr></thead><tbody>'+
+    sat.map(function(s){
+      return '<tr><td><b>'+esc(s.i.id)+'</b></td><td>Denizli → '+esc(s.i.to)+'</td>'+
+        '<td class="tnum">'+tl(s.t.tutar)+'</td><td style="white-space:normal;color:var(--ink-2)">'+esc(L(s.t.not))+'</td>'+
+        '<td><span class="chip '+(s.t.durum==="kabul"?"ok":s.t.durum==="red"?"bad":"warn")+'">'+t.tDurum[s.t.durum]+'</span></td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+
+function ekranIsler(){
+  var t=T(), f=benimFirmam();
+  var liste=ILANLAR.filter(function(i){
+    return (i.teklifler||[]).some(function(tk){ return tk.firma===f && tk.durum==="kabul"; });
+  });
+  return bas(t.islerH,t.islerP)+
+    (liste.length?'<div class="grid">'+liste.map(function(i){return ilanKarti(i,false);}).join("")+'</div>'
+     :'<div class="empty"><b>'+t.bosTeklif+'</b><p>'+t.bosTeklifP+'</p></div>');
+}
+
+function ekranCalisan(){
+  var t=T();
+  return bas(t.calisanH,t.calisanP)+
+    '<div class="tablewrap"><table><thead><tr><th>'+t.calisanSayi+'</th><th>'+t.yetki+'</th><th>'+t.eklendi+'</th></tr></thead><tbody>'+
+    CALISANLAR.map(function(c){
+      return '<tr><td><b>'+esc(c.ad)+'</b></td>'+
+        '<td><span class="chip '+(c.rol==="calisan"?"":"ok")+'">'+t.rolAd[c.rol]+'</span></td>'+
+        '<td style="color:var(--ink-2)">'+esc(L(c.kat))+'</td></tr>';
+    }).join("")+'</tbody></table></div>'+
+    '<div class="lockbox" style="margin-top:12px">'+kilit()+'<p>'+t.calisanP+'</p></div>';
+}
+
+function ekranQR(){
+  var t=T(), fr=FIRMALAR[benimFirmam()];
+  var adres="yukagi.com/f/pamukkale-lojistik?k="+qrTok;
+  return bas(t.qrH,t.qrP)+
+    '<div class="split">'+
+      '<div class="qrwrap">'+
+        '<div class="qrcard">'+
+          '<canvas id="qrC" width="176" height="176" role="img" aria-label="QR"></canvas>'+
+          '<div class="nm">'+esc(fr.ad)+'</div>'+
+          '<div class="sub">'+esc(lang==="tr"?"YÜK VE ARAÇ İLANLARI":"FREIGHT &amp; VEHICLE LISTINGS")+'</div>'+
+        '</div>'+
+        '<div class="row" style="justify-content:center">'+
+          '<button class="btn quiet sm" data-ac="qrdl">'+t.qrIndir+'</button>'+
+          '<button class="btn soft sm" data-ac="qrnew">'+t.qrYenile+'</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<div class="kv"><span>'+t.qrAdres+'</span><b style="font-size:.8rem;word-break:break-all;text-align:right">'+esc(adres)+'</b></div>'+
+        '<div class="kv"><span>'+t.qrOkuma+'</span><b class="tnum">184</b></div>'+
+        '<div class="kv"><span>'+t.dogrulanmis+'</span><b>'+(fr.dogrulandi?"✓":"—")+'</b></div>'+
+        '<div class="lockbox" style="margin-top:12px">'+kilit()+'<p>'+t.qrP+'</p></div>'+
+      '</div>'+
+    '</div>';
+}
+
+function ekranFirma(){
+  var t=T(), fr=FIRMALAR[benimFirmam()];
+  var aktif=ILANLAR.filter(function(i){ return i.firma===benimFirmam() && i.durum==="yayinda"; }).length;
+  var plan=PLANLAR[1];
+  return bas(t.firmaH,t.firmaP)+
+    '<div class="tiles" style="margin-bottom:14px">'+
+      '<div class="tile"><b class="tnum">'+aktif+'</b><span>'+t.aktifIlan+'</span></div>'+
+      '<div class="tile"><b class="tnum">'+(fr.deneme||"—")+'</b><span>'+t.kalanGun+'</span></div>'+
+      '<div class="tile"><b class="tnum">'+CALISANLAR.length+'</b><span>'+t.calisanSayi+'</span></div>'+
+    '</div>'+
+    '<div class="split">'+
+      '<div class="card">'+
+        '<h3 style="margin-bottom:8px">'+esc(fr.ad)+'</h3>'+
+        '<div class="chips" style="margin-bottom:10px">'+
+          (fr.dogrulandi?'<span class="chip ok">✓ '+t.dogrulanmis+'</span>':'<span class="chip warn">'+t.dogrulanmamis+'</span>')+
+          '<span class="chip">'+esc(fr.sehir)+'</span>'+
+          '<span class="chip ok">'+t.durum.onayli+'</span>'+
+        '</div>'+
+        '<div class="kv"><span>'+t.paket+'</span><b>'+esc(L(plan.ad))+'</b></div>'+
+        '<div class="kv"><span>'+t.denemeBitis+'</span><b>'+(lang==="tr"?"8 Kasım 2026":"8 November 2026")+'</b></div>'+
+        '<div class="kv"><span>'+t.limitIlan+'</span><b class="tnum">'+aktif+' / '+plan.ilan+'</b></div>'+
+        '<div class="kv"><span>'+t.limitCalisan+'</span><b class="tnum">'+CALISANLAR.length+' / '+plan.calisan+'</b></div>'+
+      '</div>'+
+      '<div class="card">'+
+        '<h3 style="margin-bottom:6px">'+esc(L(plan.ad))+'</h3>'+
+        '<div class="price tnum">'+tl(plan.fiyat)+' <span style="font-family:var(--body);font-size:.85rem;font-weight:500;color:var(--ink-2)">/ '+t.aylik+'</span></div>'+
+        '<p style="font-size:.8rem;color:var(--ink-3);margin-top:3px">'+t.kdvHaric+'</p>'+
+        '<div class="lockbox" style="margin-top:12px">'+kilit()+'<p>'+t.notice+'</p></div>'+
+      '</div>'+
+    '</div>';
+}
+
+/* --------- yönetim --------- */
+function ekranOnay(){
+  var t=T(), bek=Object.keys(FIRMALAR).filter(function(k){ return FIRMALAR[k].durum==="beklemede"; });
+  return bas(t.onayH,t.onayP)+(bek.length
+    ? '<div class="grid">'+bek.map(function(k){
+        var f=FIRMALAR[k];
+        return '<div class="card"><h3>'+esc(f.ad)+'</h3>'+
+          '<div class="chips" style="margin:8px 0"><span class="chip warn">'+t.durum.beklemede+'</span>'+
+          '<span class="chip">'+esc(f.sehir)+'</span>'+
+          '<span class="chip">'+esc(f.tur==="loj"?(lang==="tr"?"Lojistik":"Logistics"):(lang==="tr"?"Yük veren":"Shipper"))+'</span></div>'+
+          '<div class="foot"><button class="btn sm" data-ac="onayla" data-k="'+k+'">'+t.onayla+'</button>'+
+          '<span class="perkm">'+(lang==="tr"?"30 gün deneme başlar":"starts a 30-day trial")+'</span></div></div>';
+      }).join("")+'</div>'
+    : '<div class="empty"><b>'+(lang==="tr"?"Onay kuyruğu boş":"The queue is empty")+'</b><p>'+t.onayP+'</p></div>');
+}
+
+function ekranFirmalar(){
+  var t=T();
+  return bas(t.firmalarH,t.firmalarP)+
+    '<div class="tablewrap"><table><thead><tr>'+
+      '<th>'+(lang==="tr"?"Firma":"Company")+'</th><th>'+(lang==="tr"?"Tür":"Type")+'</th>'+
+      '<th>'+(lang==="tr"?"Şehir":"City")+'</th><th>'+(lang==="tr"?"Durum":"Status")+'</th>'+
+      '<th>'+(lang==="tr"?"Doğrulama":"Verification")+'</th></tr></thead><tbody>'+
+    Object.keys(FIRMALAR).map(function(k){
+      var f=FIRMALAR[k];
+      var tur = f.tur==="loj"?(lang==="tr"?"Lojistik":"Logistics"):f.tur==="nak"?(lang==="tr"?"Nakliyeci":"Carrier"):(lang==="tr"?"Yük veren":"Shipper");
+      return '<tr><td><b>'+esc(f.ad)+'</b></td><td>'+tur+'</td><td>'+esc(f.sehir)+'</td>'+
+        '<td><span class="chip '+(f.durum==="onayli"?"ok":"warn")+'">'+t.durum[f.durum]+'</span></td>'+
+        '<td>'+(f.dogrulandi?'<span class="chip ok">✓</span>':'<span class="chip warn">'+t.dogrulanmamis+'</span>')+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+
+function ekranAbonelik(){
+  var t=T();
+  return bas(t.abonelikH,t.abonelikP)+
+    '<div class="grid" style="margin-bottom:14px">'+PLANLAR.map(function(p){
+      return '<div class="card"><h3>'+esc(L(p.ad))+'</h3>'+
+        '<div class="price tnum" style="margin:6px 0 2px">'+tl(p.fiyat)+' <span style="font-family:var(--body);font-size:.85rem;font-weight:500;color:var(--ink-2)">/ '+t.aylik+'</span></div>'+
+        '<p style="font-size:.78rem;color:var(--ink-3)">'+t.kdvHaric+'</p>'+
+        '<div style="margin-top:10px"><div class="kv"><span>'+t.limitCalisan+'</span><b class="tnum">'+p.calisan+'</b></div>'+
+        '<div class="kv"><span>'+t.limitIlan+'</span><b class="tnum">'+p.ilan+'</b></div></div></div>';
+    }).join("")+'</div>'+
+    '<div class="tablewrap"><table><thead><tr><th>'+(lang==="tr"?"Firma":"Company")+'</th><th>'+t.paket+'</th>'+
+      '<th>'+(lang==="tr"?"Durum":"Status")+'</th><th>'+t.denemeBitis+'</th></tr></thead><tbody>'+
+    Object.keys(FIRMALAR).filter(function(k){return FIRMALAR[k].durum==="onayli";}).map(function(k){
+      var f=FIRMALAR[k];
+      var den=f.deneme?('<span class="chip warn">'+f.deneme+' '+t.kalanGun+'</span>'):'<span class="chip">'+(lang==="tr"?"Ücretsiz kullanım":"Free tier")+'</span>';
+      return '<tr><td><b>'+esc(f.ad)+'</b></td><td>'+esc(f.plan)+'</td><td>'+den+'</td>'+
+        '<td class="tnum">'+(f.deneme?(lang==="tr"?"8 Kasım 2026":"8 Nov 2026"):"—")+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+
+function ekranGelir(){
+  var t=T();
+  return bas(t.gelirH,t.gelirP)+
+    '<div class="tiles" style="margin-bottom:14px">'+
+      '<div class="tile"><b class="tnum">'+tl(0)+'</b><span>'+(lang==="tr"?"Bu ayki gelir":"Revenue this month")+'</span></div>'+
+      '<div class="tile"><b class="tnum">1</b><span>'+(lang==="tr"?"Denemedeki firma":"Companies in trial")+'</span></div>'+
+      '<div class="tile"><b class="tnum">4</b><span>'+(lang==="tr"?"Onaylı firma":"Approved companies")+'</span></div>'+
+      '<div class="tile"><b class="tnum">0</b><span>'+(lang==="tr"?"Ücretli abone":"Paying subscribers")+'</span></div>'+
+    '</div>'+
+    '<div class="empty"><b>'+t.gelirYok+'</b><p>'+t.gelirYokP+'</p></div>';
+}
+
+function ekranKayit(){
+  var t=T();
+  return bas(t.kayitH,t.kayitP)+
+    '<div class="tablewrap"><table><thead><tr><th>'+(lang==="tr"?"Zaman":"Time")+'</th>'+
+      '<th>'+(lang==="tr"?"Kim":"Who")+'</th><th>'+(lang==="tr"?"İşlem":"Action")+'</th>'+
+      '<th>'+(lang==="tr"?"Hedef":"Target")+'</th></tr></thead><tbody>'+
+    KAYITLAR.map(function(k){
+      return '<tr><td style="color:var(--ink-2)">'+esc(L(k.z))+'</td><td><b>'+esc(k.kim)+'</b></td>'+
+        '<td>'+esc(L(k.ne))+'</td><td style="color:var(--ink-2)">'+esc(k.hedef)+'</td></tr>';
+    }).join("")+'</tbody></table></div>'+
+    '<div class="lockbox" style="margin-top:12px">'+kilit()+'<p>'+t.kayitP+'</p></div>';
+}
+
+/* --------- ilan detayı --------- */
+function ekranDetay(){
+  var t=T(), i=null;
+  for(var x=0;x<ILANLAR.length;x++) if(ILANLAR[x].id===acikIlan) i=ILANLAR[x];
+  if(!i) { ekran="bul"; return ekranBul(); }
+  var k=km(i.to), sahibi=(i.firma===benimFirmam()), gor=teklifGorebilir(i);
+
+  var teklifBlok;
+  if(gor){
+    var lst=i.teklifler||[];
+    teklifBlok='<div class="card"><h3 style="margin-bottom:8px">'+(lang==="tr"?"Teklifler":"Offers")+' ('+lst.length+')</h3>'+
+      (lst.length? lst.map(function(tk){
+        return '<div class="kv"><div><b>'+esc(FIRMALAR[tk.firma].ad)+'</b>'+
+          '<div style="font-size:.82rem;color:var(--ink-2)">'+esc(L(tk.not))+'</div></div>'+
+          '<div style="text-align:right"><b class="tnum">'+tl(tk.tutar)+'</b>'+
+          '<div><span class="chip '+(tk.durum==="kabul"?"ok":tk.durum==="red"?"bad":"warn")+'">'+t.tDurum[tk.durum]+'</span></div></div></div>';
+      }).join("") : '<p style="font-size:.9rem;color:var(--ink-2)">'+t.bosTeklifP+'</p>')+
+    '</div>';
+  } else {
+    teklifBlok='<div class="lockbox">'+kilit()+'<p>'+t.gizliAcik+'</p></div>';
+  }
+
+  var aksiyon = (!sahibi && rol!=="adm" && i.durum==="yayinda")
+    ? (teklifFormu===i.id
+        ? '<form class="card" id="teklifForm" style="margin-top:12px">'+
+          '<h3 style="margin-bottom:10px">'+t.teklifVer+'</h3>'+
+          '<div class="field" style="margin-bottom:9px"><label for="tfT">'+t.tutar+'</label>'+
+            '<input id="tfT" type="number" inputmode="numeric" value="'+Math.round(i.fiyat*0.96)+'" required></div>'+
+          '<div class="field" style="margin-bottom:11px"><label for="tfN">'+t.not+'</label>'+
+            '<textarea id="tfN" rows="2" placeholder="'+esc(t.notPh)+'"></textarea></div>'+
+          '<div class="row"><button class="btn" type="submit">'+t.teklifGonder+'</button>'+
+          '<button class="btn quiet" type="button" data-ac="iptal">'+t.vazgec+'</button></div></form>'
+        : '<button class="btn" style="margin-top:12px" data-ac="teklif" data-id="'+i.id+'">'+t.teklifVer+'</button>')
+    : "";
+
+  return '<button class="btn quiet sm" data-ac="geri" style="margin-bottom:12px">← '+t.geri+'</button>'+
+    '<div class="split">'+
+      '<div class="stack">'+
+        '<div class="card">'+
+          '<div class="route" style="font-size:1.6rem">'+esc("Denizli")+ok()+esc(i.to)+'</div>'+
+          '<div class="chips" style="margin:10px 0">'+
+            (FIRMALAR[i.firma].dogrulandi?'<span class="chip ok">✓ '+t.dogrulanmis+'</span>':'<span class="chip warn">'+t.dogrulanmamis+'</span>')+
+            '<span class="chip">'+esc(dorseAd(i.dorse))+'</span>'+
+            '<span class="chip">'+i.ton+' '+t.ton+'</span>'+
+            '<span class="chip">'+esc(L(i.ne))+'</span>'+
+            (sahibi?'<span class="chip '+(i.gor==="pazar"?"ok":"warn")+'">'+t.gorunurluk[i.gor]+'</span>':"")+
+          '</div>'+
+          '<div class="kv"><span>'+t.yukCinsi+'</span><b>'+esc(L(i.cargo))+'</b></div>'+
+          '<div class="kv"><span>'+t.mesafe+'</span><b class="tnum">'+k+' '+t.km+'</b></div>'+
+          '<div class="kv"><span>'+t.istenenFiyat+'</span><b class="tnum">'+tl(i.fiyat)+'</b></div>'+
+          '<div class="kv"><span>'+t.kmBasi+'</span><b class="tnum">'+tl(perkm(i.fiyat,k))+'</b></div>'+
+          '<div class="kv"><span>'+t.ilanNo+'</span><b>'+esc(i.id)+'</b></div>'+
+          '<div class="kv"><span>'+t.yayin+'</span><b>'+esc(L(i.posted))+'</b></div>'+
+          '<h3 style="margin-top:14px">'+t.aciklama+'</h3>'+
+          '<p style="color:var(--ink-2);margin-top:5px;font-size:.93rem">'+esc(L(i.not))+'</p>'+
+          aksiyon+
+        '</div>'+
+      '</div>'+
+      '<div class="stack">'+teklifBlok+
+        '<div class="card"><div class="kv"><span>'+(lang==="tr"?"İlan sahibi":"Listing owner")+'</span><b>'+esc(FIRMALAR[i.firma].ad)+'</b></div>'+
+        '<div class="kv"><span>'+(lang==="tr"?"Telefon":"Phone")+'</span><b>'+
+          (gor||i.gor==="pazar" ? "0532 418 22 90" : '<span class="chip lock">'+(lang==="tr"?"Giriş gerekli":"Sign-in required")+'</span>')+'</b></div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function bas(h,p){ return '<div class="head"><h1>'+esc(h)+'</h1><p>'+esc(p)+'</p></div>'; }
+
+/* ===================== çizim ===================== */
+var EKRANLAR={bul:ekranBul, ilanlar:ekranIlanlarim, teklifler:ekranTeklifler, benimTeklif:ekranBenimTeklif,
+  isler:ekranIsler, calisan:ekranCalisan, qr:ekranQR, firma:ekranFirma,
+  onay:ekranOnay, firmalar:ekranFirmalar, abonelik:ekranAbonelik, gelir:ekranGelir, kayit:ekranKayit};
+
+function ciz(){
+  var t=T();
+  document.getElementById("brandName").textContent=t.brand;
+  document.getElementById("roleLbl").textContent=t.roleLbl;
+  document.getElementById("noticeTxt").textContent=t.notice;
+  document.documentElement.lang=lang;
+
+  var rs=document.getElementById("roleSel");
+  rs.innerHTML=["loj","yuk","nak","adm"].map(function(r){
+    return '<option value="'+r+'"'+(r===rol?' selected':'')+'>'+esc(t.roles[r])+'</option>';}).join("");
+
+  var menu=MENU[rol];
+  if(menu.indexOf(ekran)<0 && ekran!=="detay") ekran=menu[0];
+  var bekSay=Object.keys(FIRMALAR).filter(function(k){return FIRMALAR[k].durum==="beklemede";}).length;
+  document.getElementById("nav").innerHTML=menu.map(function(m){
+    var say = (m==="onay"&&bekSay) ? '<span class="count">'+bekSay+'</span>' : "";
+    return '<button type="button" data-ek="'+m+'"'+((ekran===m)?' aria-current="true"':'')+'>'+
+      '<span>'+esc(t.nav[m])+'</span>'+say+'</button>';
+  }).join("");
+
+  var fn = (ekran==="detay") ? ekranDetay : EKRANLAR[ekran];
+  document.getElementById("view").innerHTML = fn ? fn() : "";
+
+  if(ekran==="qr") qrCiz();
+}
+
+function qrCiz(){
+  var c=document.getElementById("qrC"); if(!c) return;
+  var adres="https://yukagi.com/f/pamukkale-lojistik?k="+qrTok;
+  if(typeof QRious==="function"){
+    try{ new QRious({element:c, value:adres, size:352, level:"M", background:"#ffffff", foreground:"#0E1613"}); return; }catch(e){}
+  }
+  var g=c.getContext("2d");
+  g.fillStyle="#fff"; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle="#56635B"; g.font="12px sans-serif"; g.textAlign="center";
+  g.fillText(lang==="tr"?"QR görseli yüklenemedi":"QR image unavailable", c.width/2, c.height/2);
+}
+
+/* ===================== olaylar ===================== */
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-ek],[data-ac]"); if(!b) return;
+
+  if(b.dataset.ek){ ekran=b.dataset.ek; acikIlan=null; teklifFormu=null; ciz(); window.scrollTo({top:0,behavior:"instant"}); return; }
+
+  var ac=b.dataset.ac, t=T();
+  if(ac==="ac"){ acikIlan=b.dataset.id; ekran="detay"; teklifFormu=null; ciz(); window.scrollTo({top:0,behavior:"instant"}); return; }
+  if(ac==="geri"){ ekran = MENU[rol].indexOf("bul")>=0 ? "bul" : "ilanlar"; acikIlan=null; ciz(); return; }
+  if(ac==="teklif"){ teklifFormu=b.dataset.id; ciz(); return; }
+  if(ac==="iptal"){ teklifFormu=null; ciz(); return; }
+
+  if(ac==="kabul"||ac==="red"){
+    var id=b.dataset.id, fk=b.dataset.f;
+    ILANLAR.forEach(function(i){
+      if(i.id!==id) return;
+      (i.teklifler||[]).forEach(function(tk){
+        if(tk.firma===fk) tk.durum = (ac==="kabul") ? "kabul" : "red";
+        else if(ac==="kabul" && tk.durum==="bekliyor") tk.durum="red";
+      });
+      if(ac==="kabul") i.durum="anlasildi";
+    });
+    toast(ac==="kabul"? t.kabulEdildi : t.tDurum.red);
+    ciz(); return;
+  }
+
+  if(ac==="onayla"){
+    var k=b.dataset.k;
+    if(FIRMALAR[k]){ FIRMALAR[k].durum="onayli"; FIRMALAR[k].plan="Başlangıç"; FIRMALAR[k].deneme=30; }
+    toast(t.firmaOnaylandi); ciz(); return;
+  }
+  if(ac==="qrdl"){ toast(t.indirKapali); return; }
+  if(ac==="qrnew"){
+    qrTok = Math.random().toString(16).slice(2,10);
+    toast(t.qrYenilendi); ciz(); return;
+  }
+});
+
+document.addEventListener("submit",function(e){
+  e.preventDefault();
+  var t=T();
+  if(e.target.id==="filtreForm"){
+    filtre.to=document.getElementById("fTo").value;
+    filtre.dorse=document.getElementById("fD").value;
+    filtre.sort=document.getElementById("fS").value;
+    ciz(); return;
+  }
+  if(e.target.id==="teklifForm"){
+    var tutar=Number(document.getElementById("tfT").value)||0;
+    var not=document.getElementById("tfN").value.trim();
+    ILANLAR.forEach(function(i){
+      if(i.id!==teklifFormu) return;
+      i.teklifler=(i.teklifler||[]).concat([{firma:benimFirmam(), tutar:tutar, durum:"bekliyor",
+        not:{tr:not||"—", en:not||"—"}}]);
+    });
+    teklifFormu=null; toast(t.teklifAlindi); ciz();
+  }
+});
+
+document.getElementById("roleSel").addEventListener("change",function(){
+  rol=this.value; ekran=MENU[rol][0]; acikIlan=null; teklifFormu=null; ciz();
+  window.scrollTo({top:0,behavior:"instant"});
+});
+
+document.querySelectorAll(".langs button").forEach(function(b){
+  b.addEventListener("click",function(){
+    lang=this.dataset.lang;
+    try{ localStorage.setItem("ya_lang",lang); }catch(e){}
+    document.querySelectorAll(".langs button").forEach(function(x){
+      x.setAttribute("aria-pressed", String(x.dataset.lang===lang)); });
+    ciz();
+  });
+});
+
+ciz();
+})();
+</script>
